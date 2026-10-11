@@ -1,7 +1,7 @@
 ﻿{
 	"name": "BetterChat",
 	"version_number": "1.0.0",
-	"website_url": "",
+	"website_url": "https://github.com/Slendykray/BetterChat",
 	"description": "Adds separate player chat",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.2108",
