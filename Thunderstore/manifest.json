@@ -1,11 +1,12 @@
 ﻿{
 	"name": "BetterChat",
-	"version_number": "1.0.1",
+	"version_number": "1.1.0",
 	"website_url": "https://github.com/Slendykray/BetterChat",
 	"description": "Adds separate player chat",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.2108",
 		"RiskofThunder-HookGenPatcher-1.2.3",
-		"RiskofThunder-R2API_Core-5.3.0"
+		"RiskofThunder-R2API_Core-5.3.0",
+		"Rune580-Risk_Of_Options-2.8.6"
 	]
 }
