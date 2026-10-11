@@ -1,6 +1,6 @@
 ﻿using BepInEx.Logging;
 
-namespace ItemChat
+namespace BetterChat
 {
     internal static class Log
     {

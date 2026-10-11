@@ -1,3 +1,4 @@
-# My first mod
+# BetterChat
 
-Description.
+Adds separate scrollable chat for players' messages
+
