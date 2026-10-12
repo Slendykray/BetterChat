@@ -1,6 +1,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using MonoMod.RuntimeDetour;
 using R2API;
 using RiskOfOptions;
 using RiskOfOptions.OptionConfigs;
@@ -9,6 +10,7 @@ using RoR2;
 using RoR2.UI;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -25,8 +27,8 @@ namespace BetterChat
         public const string PluginVersion = "1.0.0";
 
         public static PlayerChat currentChat;
-        public RectTransform defaultRect;
-        public RectTransform allyCardRect;
+        public static ChatBox defaultChatbox;
+
 
         public void Awake()
         {
@@ -43,71 +45,73 @@ namespace BetterChat
             On.RoR2.UI.AllyCardManager.Awake += AllyCardManager_Awake;
 
             On.RoR2.UI.ChatBox.Start += ChatBox_Start;
+
+            On.RoR2.UI.ChatBox.Awake += ChatBox_Awake;
         }
 
-  
+        Vector2 defaultOffsetMax;
+        Vector2 defaultOffsetMin;
+        private void ChatBox_Awake(On.RoR2.UI.ChatBox.orig_Awake orig, ChatBox self)
+        {
+            if (self.transform.name.Contains("ChatBox, In Run"))
+            {
+                defaultOffsetMax = self.standardChatboxRect.offsetMax;
+                defaultOffsetMin = self.standardChatboxRect.offsetMin;
+            }
+         
+            orig(self);
+        }
+
+
         public static ConfigEntry<float> playerChatPosY;
         public static ConfigEntry<float> playerChatHeight;
+        public static ConfigEntry<float> defaultChatPosY;
+        public static ConfigEntry<float> defaultChatHeight;
 
-        public static ConfigEntry<float> pingChatPosY;
-        public static ConfigEntry<float> pingChatHeight;
-
-        //public static ConfigEntry<float> allyCardPosY;
-        //public static ConfigEntry<float> allyCardHeight;
         private void InitConfig()
         {
             Sprite icon = Asset.mainBundle.LoadAsset<Sprite>("icon.png");
             ModSettingsManager.SetModIcon(icon);
 
-           
+
             playerChatPosY = Config.Bind<float>("PlayerChat", "playerChatPosY", 50f, "default: 50");
             playerChatHeight = Config.Bind<float>("PlayerChat", "playerChatHeight", 170f, "default: 170");
 
+            defaultChatPosY = Config.Bind<float>("DefaultChat", "defaultChatPosY", 210f, "default: 210");
+            defaultChatHeight = Config.Bind<float>("DefaultChat", "defaultChatHeight", 140f, "default: 140");
 
-            pingChatPosY = Config.Bind<float>("PingChat", "pingChatPosY", 210f, "default: 210\nvanila: 50");
-            pingChatHeight = Config.Bind<float>("PingChat", "pingChatHeight", 140f, "vanila: 140");
+            ModSettingsManager.AddOption(new SliderOption(playerChatPosY, new SliderConfig() { min = 40f, max = 260f }));
+            ModSettingsManager.AddOption(new SliderOption(playerChatHeight, new SliderConfig() { min = 40f, max = 260f }));
 
-
-            //allyCardPosY = Config.Bind<float>("AllyCard", "allyCardPosY", 210f, "default: 210\nvanila: 50");
-            //allyCardHeight = Config.Bind<float>("AllyCard", "allyCardHeight", 140f, "vanila: 140");
-
-
-            ModSettingsManager.AddOption(new SliderOption(playerChatPosY, new SliderConfig() { min = 50f, max = 250f }));
-            ModSettingsManager.AddOption(new SliderOption(playerChatHeight, new SliderConfig() { min = 50f, max = 250f }));
-
-            ModSettingsManager.AddOption(new SliderOption(pingChatPosY, new SliderConfig() { min = 50f, max = 250f }));
-            ModSettingsManager.AddOption(new SliderOption(pingChatHeight, new SliderConfig() { min = 50f, max = 250f }));
-
-
-            //ModSettingsManager.AddOption(new SliderOption(allyCardPosY, new SliderConfig() { min = 50f, max = 250f }));
-            //ModSettingsManager.AddOption(new SliderOption(allyCardHeight, new SliderConfig() { min = 50f, max = 250f }));
-
+            ModSettingsManager.AddOption(new SliderOption(defaultChatPosY, new SliderConfig() { min = 40f, max = 260f }));
+            ModSettingsManager.AddOption(new SliderOption(defaultChatHeight, new SliderConfig() { min = 40, max = 260f }));
 
             playerChatPosY.SettingChanged += (obj, args) => SetShit();
             playerChatHeight.SettingChanged += (obj, args) => SetShit();
 
-            pingChatPosY.SettingChanged += (obj, args) => SetShit();
-            pingChatHeight.SettingChanged += (obj, args) => SetShit();
-
-
-            //allyCardPosY.SettingChanged += (obj, args) => SetShit();
-            //allyCardHeight.SettingChanged += (obj, args) => SetShit();
+            defaultChatPosY.SettingChanged += (obj, args) => SetShit();
+            defaultChatHeight.SettingChanged += (obj, args) => SetShit();
         }
 
         private void SetShit()
         {
-            RectTransform rectTransform = currentChat.transform.GetComponent<RectTransform>();
+            RectTransform defaultRect = defaultChatbox.standardChatboxRect;
 
-            rectTransform.anchorMax = new Vector2(1f, 0.45f);
+            RectTransform playerRect = currentChat.transform.GetComponent<RectTransform>();
 
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, playerChatHeight.Value);
-            rectTransform.anchoredPosition = new Vector2(-155, playerChatPosY.Value);
+            playerRect.anchorMax = new Vector2(1f, 0.45f);
 
-            defaultRect.anchoredPosition = new Vector2(0, pingChatPosY.Value);
-            defaultRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, pingChatHeight.Value);
+            //anti wolfo qol
+            defaultRect.offsetMax = defaultOffsetMax;
+            defaultRect.offsetMin = defaultOffsetMin;
+            defaultChatbox.allowExpandedChatbox = false;
 
-            //allyCardRect.anchoredPosition = new Vector2(0, allyCardPosY.Value);
-            //allyCardRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, allyCardHeight.Value);
+
+            playerRect.anchoredPosition = new Vector2(-155, playerChatPosY.Value);
+            defaultRect.anchoredPosition = new Vector2(0, defaultChatPosY.Value);
+
+            playerRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, playerChatHeight.Value);
+            defaultRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, defaultChatHeight.Value);
         }
 
         private void ChatBox_Start(On.RoR2.UI.ChatBox.orig_Start orig, ChatBox self)
@@ -116,7 +120,7 @@ namespace BetterChat
 
             if (self.transform.name.Contains("ChatBox, In Run"))
             {
-                defaultRect = self.transform.Find("StandardRect").GetComponent<RectTransform>();
+                defaultChatbox = self;
 
                 SetShit();
             }
@@ -126,7 +130,6 @@ namespace BetterChat
         {
             orig(self);
             
-            //allyCardRect = self.GetComponent<RectTransform>();
             var rect = self.GetComponent<RectTransform>();
 
             if (rect != null)
