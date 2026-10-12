@@ -14,11 +14,6 @@
 
 		<PackageReference Include="BepInEx.Core" Version="5.4.21" />
 
-		<PackageReference Include="Krafs.Publicizer" Version="2.3.2">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-
 		<PackageReference Include="R2API.Core" Version="5.3.0" />
 
 		<PackageReference Include="Rune580.Mods.RiskOfRain2.RiskOfOptions" Version="2.8.6" />
@@ -29,7 +24,6 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="xcopy &quot;$(ProjectDir)\bin\Debug\netstandard2.1\BetterChat.dll&quot; &quot;$(ProjectDir)..\Thunderstore\plugins&quot; /Y /I&#xD;&#xA;&#xD;&#xA;copy &quot;$(ProjectDir)..\BetterChatUnityProject\AssetBundles\StandaloneWindows\betterchatbundle&quot; &quot;$(ProjectDir)..\Thunderstore\plugins&quot;&#xD;&#xA;&#xD;&#xA;xcopy &quot;$(ProjectDir)..\Thunderstore\plugins&quot; &quot;C:\Users\Slendykray\Documents\r2profiles\RiskOfRain2\profiles\dev\BepInEx\plugins\BetterChat&quot; /Y /I" />
+		<Exec Command="xcopy &quot;$(ProjectDir)\bin\Debug\netstandard2.1\BetterChat.dll&quot; &quot;$(ProjectDir)..\Thunderstore\plugins&quot; /Y /I&#xD;&#xA;&#xD;&#xA;copy &quot;$(ProjectDir)..\BetterChatUnityProject\AssetBundles\StandaloneWindows\betterchatbundle&quot; &quot;$(ProjectDir)..\Thunderstore\plugins&quot;&#xD;&#xA;&#xD;&#xA;xcopy &quot;$(ProjectDir)..\Thunderstore\plugins&quot; &quot;C:\Users\Slendykray\Documents\r2profiles\RiskOfRain2\profiles\dev\BepInEx\plugins\BetterChat&quot; /Y /I" />
 	</Target>
-
 </Project>
